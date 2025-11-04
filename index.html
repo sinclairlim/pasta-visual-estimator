@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pasta Visual Estimator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍝 Pasta Visual Estimator</h1>
+            <p class="subtitle">Know exactly how much cooked pasta you'll get!</p>
+        </header>
+
+        <!-- Step 1: Pasta Type Selection -->
+        <section id="step1" class="step active">
+            <h2>Step 1: Select Pasta Type</h2>
+            <select id="pastaType" class="input-field">
+                <option value="">Choose pasta type...</option>
+                <option value="spaghetti">Spaghetti</option>
+                <option value="angel-hair">Angel Hair</option>
+                <option value="linguine">Linguine</option>
+                <option value="fettuccine">Fettuccine</option>
+                <option value="bucatini">Bucatini</option>
+            </select>
+            <button id="nextStep1" class="btn btn-primary" disabled>Next</button>
+        </section>
+
+        <!-- Step 2: Bowl Calibration with Spaghetti Reference -->
+        <section id="step2" class="step">
+            <h2>Step 2: Measure Your Bowl</h2>
+            <div class="instructions">
+                <p>🍝 Place a strand of dry spaghetti across your bowl</p>
+                <p>📱 Position your phone so you can see the entire bowl</p>
+                <p id="cameraStatus" class="camera-status">Click "Start Camera" to begin</p>
+            </div>
+
+            <div id="calibrationArea">
+                <div id="cameraContainer">
+                    <video id="cameraVideo" autoplay playsinline></video>
+                    <canvas id="calibrationCanvas"></canvas>
+                </div>
+                <button id="startCamera" class="btn btn-secondary">Start Camera</button>
+                <div class="controls">
+                    <div class="reference-steps">
+                        <p class="step-instruction">1️⃣ Drag the GREEN line to match your spaghetti strand (10 inches)</p>
+                        <p class="step-instruction">2️⃣ Use the slider to set your bowl diameter</p>
+                    </div>
+                    <div class="bowl-size-control">
+                        <label for="bowlSizeSlider">
+                            🥣 Bowl Diameter: <strong><span id="bowlSizeValue">8.0</span> inches</strong>
+                        </label>
+                        <input type="range" id="bowlSizeSlider" min="4" max="16" value="8" step="0.5" class="slider">
+                        <div class="preset-buttons">
+                            <button class="btn-preset-bowl" data-size="6">Small (6")</button>
+                            <button class="btn-preset-bowl" data-size="8">Medium (8")</button>
+                            <button class="btn-preset-bowl" data-size="10">Large (10")</button>
+                            <button class="btn-preset-bowl" data-size="12">XL (12")</button>
+                        </div>
+                    </div>
+                    <div class="measurement-display">
+                        <p>📏 Spaghetti reference: <strong>10.0 inches</strong></p>
+                        <p>🥣 Your bowl: <strong><span id="bowlSizeDisplay2">8.0</span> inches</strong></p>
+                    </div>
+                </div>
+            </div>
+            <button id="nextStep2" class="btn btn-primary">Next</button>
+        </section>
+
+        <!-- Step 3: Measure Pasta Bundle -->
+        <section id="step3" class="step">
+            <h2>Step 3: Measure Your Pasta</h2>
+            <div class="instructions">
+                <p>🤲 Hold your pasta bundle in the same frame as the bowl</p>
+                <p>📏 Adjust the ORANGE circle to match your pasta bundle diameter</p>
+                <p id="cameraStatus3" class="camera-status">Camera will continue from previous step</p>
+            </div>
+
+            <div id="calibrationArea3">
+                <div id="cameraContainer3">
+                    <video id="cameraVideo3" autoplay playsinline style="display:none;"></video>
+                    <canvas id="pastaCanvas"></canvas>
+                </div>
+                <div class="controls">
+                    <div class="reference-steps">
+                        <p class="step-instruction">Drag the ORANGE circle OR use the slider below to match your pasta bundle thickness</p>
+                    </div>
+                    <div class="bowl-size-control">
+                        <label for="pastaBundleSlider">
+                            🍝 Pasta Bundle Diameter: <strong><span id="pastaBundleSliderValue">1.0</span> inches</strong>
+                        </label>
+                        <input type="range" id="pastaBundleSlider" min="0.25" max="6" value="1" step="0.1" class="slider">
+                    </div>
+                    <div class="measurement-display">
+                        <p>🍝 Pasta bundle diameter: <strong><span id="pastaBundleSize">1.0</span> inches</strong></p>
+                        <p>⚖️ Estimated weight: <strong><span id="pastaWeight">100</span> grams</strong></p>
+                    </div>
+                </div>
+            </div>
+            <button id="nextStep3" class="btn btn-primary">Show Estimate</button>
+        </section>
+
+        <!-- Step 4: Visual Estimate -->
+        <section id="step4" class="step">
+            <h2>Step 4: Your Cooked Pasta Estimate</h2>
+            <div class="estimate-display">
+                <div class="estimate-info">
+                    <p><strong>Pasta Type:</strong> <span id="displayPastaType"></span></p>
+                    <p><strong>Bowl Size:</strong> <span id="displayBowlSize"></span> inches</p>
+                    <p><strong>Raw Amount:</strong> <span id="displayRawAmount"></span></p>
+                    <p><strong>Cooked Amount:</strong> <span id="displayCookedAmount"></span></p>
+                    <p class="expansion-note"><span id="displayExpansion"></span></p>
+                </div>
+                <div class="visualization">
+                    <h3>Visual Estimate</h3>
+                    <canvas id="resultCanvas"></canvas>
+                    <div class="fill-indicator">
+                        <p>Bowl Fill Level: <strong><span id="fillLevel"></span>%</strong></p>
+                        <div class="fill-bar">
+                            <div id="fillBarInner" class="fill-bar-inner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="startOver" class="btn btn-secondary">Start Over</button>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
