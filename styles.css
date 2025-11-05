@@ -145,6 +145,27 @@ select.input-field {
     margin-bottom: 0;
 }
 
+.handedness-toggle {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.handedness-toggle label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.handedness-toggle input[type="checkbox"] {
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
 /* Calibration area */
 #calibrationArea, #calibrationArea3 {
     display: flex;

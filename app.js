@@ -17,7 +17,8 @@ let appState = {
     pastaAmount: 100, // calculated from bundle diameter
     unit: 'grams',
     spaghettiLineLength: 500, // pixels on canvas (very long by default)
-    pastaBundleDiameter: 1.0 // inches - measured by user
+    pastaBundleDiameter: 1.0, // inches - measured by user
+    isLeftHanded: false // pasta reference position: false = left side (default), true = right side
 };
 
 // DOM Elements
@@ -122,6 +123,15 @@ function setupEventListeners() {
         pastaBundleSlider.addEventListener('input', (e) => {
             appState.pastaBundleDiameter = parseFloat(e.target.value);
             if (pastaBundleSliderValue) pastaBundleSliderValue.textContent = appState.pastaBundleDiameter.toFixed(1);
+        });
+    }
+
+    // Handedness toggle
+    const handednessToggle = document.getElementById('handednessToggle');
+    if (handednessToggle) {
+        handednessToggle.addEventListener('change', (e) => {
+            appState.isLeftHanded = e.target.checked;
+            // Redraw will happen automatically via animation loop
         });
     }
 
@@ -403,28 +413,36 @@ function drawPastaOverlay() {
     ctx.stroke();
     ctx.setLineDash([]);
 
+    // Calculate pasta circle position - positioned to the side of the bowl
+    // Position it so the pasta circle is just inside the bowl edge for easy comparison
+    const offsetFromBowlCenter = bowlRadiusPixels * 0.5; // Position at half radius from center
+    const pastaCircleX = appState.isLeftHanded
+        ? centerX + offsetFromBowlCenter  // Right side for left-handed
+        : centerX - offsetFromBowlCenter; // Left side by default (for right-handers)
+    const pastaCircleY = centerY;
+
     // Draw pasta bundle circle (ORANGE) - adjustable
     ctx.strokeStyle = '#ff6600';
     ctx.lineWidth = 4;
     ctx.setLineDash([]);
     ctx.beginPath();
-    ctx.arc(centerX, centerY, pastaRadiusPixels, 0, Math.PI * 2);
+    ctx.arc(pastaCircleX, pastaCircleY, pastaRadiusPixels, 0, Math.PI * 2);
     ctx.stroke();
 
     // Draw grab handle
     ctx.fillStyle = '#ff6600';
     ctx.beginPath();
-    ctx.arc(centerX + pastaRadiusPixels, centerY, 15, 0, Math.PI * 2);
+    ctx.arc(pastaCircleX + pastaRadiusPixels, pastaCircleY, 15, 0, Math.PI * 2);
     ctx.fill();
 
     // Label for pasta bundle
     ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-    ctx.fillRect(centerX - 70, centerY - 15, 140, 30);
+    ctx.fillRect(pastaCircleX - 70, pastaCircleY - 15, 140, 30);
     ctx.fillStyle = '#ff6600';
     ctx.font = 'bold 16px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`PASTA (${appState.pastaBundleDiameter.toFixed(1)}")`, centerX, centerY);
+    ctx.fillText(`PASTA (${appState.pastaBundleDiameter.toFixed(1)}")`, pastaCircleX, pastaCircleY);
 
     // Calculate and update pasta weight
     calculatePastaWeight();
@@ -473,10 +491,18 @@ function checkPastaDragStart(coords) {
     const centerX = pastaCanvas.width / 2;
     const centerY = pastaCanvas.height / 2;
     const pixelsPerInch = appState.spaghettiLineLength / SPAGHETTI_LENGTH_INCHES;
+    const bowlRadiusPixels = (appState.bowlDiameter / 2) * pixelsPerInch;
     const pastaRadiusPixels = (appState.pastaBundleDiameter / 2) * pixelsPerInch;
 
+    // Calculate pasta circle position - positioned to the side of the bowl
+    const offsetFromBowlCenter = bowlRadiusPixels * 0.5;
+    const pastaCircleX = appState.isLeftHanded
+        ? centerX + offsetFromBowlCenter  // Right side for left-handed
+        : centerX - offsetFromBowlCenter; // Left side by default
+    const pastaCircleY = centerY;
+
     // Check if clicking on pasta circle edge
-    const distToCenter = Math.hypot(coords.x - centerX, coords.y - centerY);
+    const distToCenter = Math.hypot(coords.x - pastaCircleX, coords.y - pastaCircleY);
     const distToEdge = Math.abs(distToCenter - pastaRadiusPixels);
 
     if (distToEdge < 30 || distToCenter < pastaRadiusPixels) {
@@ -502,10 +528,18 @@ function handlePastaDrag(coords) {
     const centerX = pastaCanvas.width / 2;
     const centerY = pastaCanvas.height / 2;
     const pixelsPerInch = appState.spaghettiLineLength / SPAGHETTI_LENGTH_INCHES;
+    const bowlRadiusPixels = (appState.bowlDiameter / 2) * pixelsPerInch;
+
+    // Calculate pasta circle position - positioned to the side of the bowl
+    const offsetFromBowlCenter = bowlRadiusPixels * 0.5;
+    const pastaCircleX = appState.isLeftHanded
+        ? centerX + offsetFromBowlCenter  // Right side for left-handed
+        : centerX - offsetFromBowlCenter; // Left side by default
+    const pastaCircleY = centerY;
 
     if (isDraggingPastaCircle) {
-        // Adjust pasta bundle diameter based on distance from center
-        const distToCenter = Math.hypot(coords.x - centerX, coords.y - centerY);
+        // Adjust pasta bundle diameter based on distance from pasta circle center
+        const distToCenter = Math.hypot(coords.x - pastaCircleX, coords.y - pastaCircleY);
         const diameterInches = (distToCenter * 2) / pixelsPerInch;
         appState.pastaBundleDiameter = Math.max(0.25, Math.min(6, diameterInches));
 
@@ -830,7 +864,8 @@ function resetApp() {
         pastaAmount: 100,
         unit: 'grams',
         spaghettiLineLength: 500,
-        pastaBundleDiameter: 1.0
+        pastaBundleDiameter: 1.0,
+        isLeftHanded: false
     };
 
     pastaTypeSelect.value = '';
@@ -841,12 +876,14 @@ function resetApp() {
     const bowlSizeDisplay2 = document.getElementById('bowlSizeDisplay2');
     const pastaBundleSlider = document.getElementById('pastaBundleSlider');
     const pastaBundleSliderValue = document.getElementById('pastaBundleSliderValue');
+    const handednessToggle = document.getElementById('handednessToggle');
 
     if (bowlSizeSlider) bowlSizeSlider.value = 8;
     if (bowlSizeValue) bowlSizeValue.textContent = '8.0';
     if (bowlSizeDisplay2) bowlSizeDisplay2.textContent = '8.0';
     if (pastaBundleSlider) pastaBundleSlider.value = 1.0;
     if (pastaBundleSliderValue) pastaBundleSliderValue.textContent = '1.0';
+    if (handednessToggle) handednessToggle.checked = false;
 
     // Reset camera UI
     startCameraBtn.style.display = 'block';
