@@ -1,1 +1,5 @@
 .vercel
+# TLS/SSL private keys and cert artifacts
+key.pem
+*.key
+*.pem
